@@ -60,12 +60,6 @@ x0 = [xig etag thetag xia etaa thetaa]';
 x = x0;
 u = [vg phig va wa]';
 
-%% DT LTI Simulations
-% for k=1:1000
-%     x(:,k+1) = F*x(:,k) + G*u;
-%     y(:,k) = H*x(:,k+1);
-% end
-
 %% Full Nonlinear Perturbation Dynamics
 % tspan = [0,100];
 tspan = 0:0.01:100;
@@ -90,7 +84,6 @@ for i=1:length(t)
 end
 
 % States vs Time, Full NL Dynamics Simulation
-% tk = linspace(0,k/10,k+1);
 figure
 sgtitle('States vs Time, Full NL Dynamics Simulation')
 
@@ -187,4 +180,60 @@ subplot(5,1,5); hold on; grid on; grid minor
 plot(t,yt(:,5))
 xlabel('Time [s]')
 ylabel('etaa [m]')
+hold off
+
+%% DT LTI Simulations
+clear yk
+xk = x0;
+
+for k=1:1000
+    xk(:,k+1) = F*xk(:,k);
+    yk(:,k) = H*xk(:,k+1);
+end
+
+tk = linspace(0,k/10,k+1);
+
+% DT LTI
+figure
+sgtitle('States vs Time, Linearized Approximate Dynamics Simulation')
+
+subplot(6,1,1); hold on; grid on; grid minor
+plot(tk,xk(1,:))
+xlabel('Time [s]')
+ylabel('xig [m]')
+hold off
+
+subplot(6,1,2); hold on; grid on; grid minor
+plot(tk,xk(2,:))
+% plot(t,y(:,2))
+xlabel('Time [s]')
+ylabel('etag [m]')
+hold off
+
+subplot(6,1,3); hold on; grid on; grid minor
+plot(tk,xk(3,:))
+% plot(t,y(:,3))
+xlabel('Time [s]')
+ylabel('thetag [m]')
+hold off
+
+subplot(6,1,4); hold on; grid on; grid minor
+plot(tk,xk(4,:))
+% plot(t,y(:,4))
+xlabel('Time [s]')
+ylabel('xia [m]')
+hold off
+
+subplot(6,1,5); hold on; grid on; grid minor
+plot(tk,xk(5,:))
+% plot(t,y(:,5))
+xlabel('Time [s]')
+ylabel('etaa [m]')
+hold off
+
+subplot(6,1,6); hold on; grid on; grid minor
+plot(tk,xk(6,:))
+% plot(t,y(:,6))
+xlabel('Time [s]')
+ylabel('thetaa [m]')
 hold off
