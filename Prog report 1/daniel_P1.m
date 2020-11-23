@@ -21,10 +21,10 @@ C = @(xig,etag,xia,etaa) [((etaa-etag)/(xia-xig)^2)/(1+((etaa-etag)/(xia-xig))^2
     (etag-etaa)/sqrt((xig-xia)^2+(etag-etaa)^2) 0 ...
     -(xig-xia)/sqrt((xig-xia)^2+(etag-etaa)^2)...
     (etag-etaa)/sqrt((xig-xia)^2+(etag-etaa)^2) 0;...
-    ((etaa-etag)/(xia-xig)^2)/(1+((etaa-etag)/(xia-xig))^2)...
-    -((etaa-etag)/(xia-xig)^2)/(1+((etaa-etag)/(xia-xig))^2) 0 ...
-    -((etaa-etag)/(xia-xig)^2)/(1+((etaa-etag)/(xia-xig))^2)...
-    ((etaa-etag)/(xia-xig)^2)/(1+((etaa-etag)/(xia-xig))^2) -1;...
+    -((etag-etaa)/(xig-xia)^2)/(1+((etag-etaa)/(xig-xia))^2)...
+    ((etag-etaa)/(xig-xia)^2)/(1+((etag-etaa)/(xig-xia))^2) 0 ...
+    ((etag-etaa)/(xig-xia)^2)/(1+((etag-etaa)/(xig-xia))^2)...
+    -((etag-etaa)/(xig-xia)^2)/(1+((etag-etaa)/(xig-xia))^2) -1;...
     0 0 0 1 0 0; 0 0 0 0 1 0];
 
 D = zeros(6,4);
@@ -137,9 +137,9 @@ ylabel('thetaa [m]')
 hold off
 
 %% Full Nonlinear Model Data Simulation
-yk = @(xig,etag,thetag,xia,etaa,thetaa) [atan((etaa-etag)/(xia-xig))...
+yk = @(xig,etag,thetag,xia,etaa,thetaa) [atan((etaa-etag)/(xia-xig)) - thetag...
     sqrt((xig-xia)^2 + (etag-etaa)^2)...
-    atan((etaa-etag)/(xia-xig))...
+    atan((etag-etaa)/(xig-xia)) - thetaa...
     xia etaa]';
 clear yt
 for i=1:length(t)
@@ -158,37 +158,32 @@ figure
 sgtitle('Full Nonlinear Model Data Simulation')
 
 subplot(5,1,1); hold on; grid on; grid minor
-% plot(tk,x(1,:))
 plot(t,yt(:,1))
-plot(t,y(:,3))
+% plot(t,y(:,3))
 xlabel('Time [s]')
 ylabel('gamma ag [rads]')
 hold off
 
 subplot(5,1,2); hold on; grid on; grid minor
-% plot(tk,x(2,:))
 plot(t,yt(:,2))
 xlabel('Time [s]')
 ylabel('rho ga [m]')
 hold off
 
 subplot(5,1,3); hold on; grid on; grid minor
-% plot(tk,x(3,:))
 plot(t,yt(:,3))
-plot(t,y(:,6))
+% plot(t,y(:,6))
 xlabel('Time [s]')
 ylabel('gamma ga [rads]')
 hold off
 
 subplot(5,1,4); hold on; grid on; grid minor
-% plot(tk,x(4,:))
 plot(t,yt(:,4))
 xlabel('Time [s]')
 ylabel('xia [m]')
 hold off
 
 subplot(5,1,5); hold on; grid on; grid minor
-% plot(tk,x(5,:))
 plot(t,yt(:,5))
 xlabel('Time [s]')
 ylabel('etaa [m]')
