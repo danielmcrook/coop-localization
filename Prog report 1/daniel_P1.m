@@ -74,15 +74,15 @@ x0 = x0 + [0 1 0 0 0 0.1]';
 for i=1:length(t)
     thetag = y(i,3);
     thetaa = y(i,6);
-    if thetag>2*pi
+    if thetag>pi
         y(i:end,3)=thetag-2*pi;
-    elseif thetag<-2*pi
+    elseif thetag<-pi
         y(i:end,3)=y(i:end,3)+2*pi;
     end
     
-    if thetaa>2*pi
+    if thetaa>pi
         y(i:end,6)=y(i:end,6)-2*pi;
-    elseif thetaa<-2*pi
+    elseif thetaa<-pi
         y(i:end,6)=thetaa+2*pi;
     end
 end
@@ -93,36 +93,42 @@ sgtitle('States vs Time, Full NL Dynamics')
 
 subplot(6,1,1); hold on; grid on; grid minor
 plot(t,y(:,1))
+ylim([10 20]);
 xlabel('Time [s]')
 ylabel('xig [m]')
 hold off
 
 subplot(6,1,2); hold on; grid on; grid minor
 plot(t,y(:,2))
+ylim([-5 5]);
 xlabel('Time [s]')
 ylabel('etag [m]')
 hold off
 
 subplot(6,1,3); hold on; grid on; grid minor
 plot(t,y(:,3))
+ylim([-5 5]);
 xlabel('Time [s]')
 ylabel('thetag [m]')
 hold off
 
 subplot(6,1,4); hold on; grid on; grid minor
 plot(t,y(:,4))
+ylim([-200 200]);
 xlabel('Time [s]')
 ylabel('xia [m]')
 hold off
 
 subplot(6,1,5); hold on; grid on; grid minor
 plot(t,y(:,5))
+ylim([-200 200]);
 xlabel('Time [s]')
 ylabel('etaa [m]')
 hold off
 
 subplot(6,1,6); hold on; grid on; grid minor
 plot(t,y(:,6))
+ylim([-5 5]);
 xlabel('Time [s]')
 ylabel('thetaa [m]')
 hold off
