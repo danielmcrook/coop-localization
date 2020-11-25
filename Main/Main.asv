@@ -36,7 +36,7 @@ Htil=Htil_nom;
 
 %% Problem 3
 
-delx = [0; 1; 0; 0; 0; 0.1];
+delx(:,1) = [0; 1; 0; 0; 0; 0.1];
 delu = [0; 0; 0; 0];
 
 Data=load('cooplocalization_finalproj_KFdata');

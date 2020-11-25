@@ -36,7 +36,7 @@ Htil=Htil_nom;
 
 %% Problem 3
 
-delx = [0; 1; 0; 0; 0; 0.1];
+delx(:,1) = [0; 1; 0; 0; 0; 0.1];
 delu = [0; 0; 0; 0];
 
 Data=load('cooplocalization_finalproj_KFdata');
@@ -47,10 +47,11 @@ y_nom=ydata(:,2:end);
 
 for k=1:length(tvec)
     
+    x_nom(:,k+1)=x_nom(:,k)+delx(:,k);
     
-    x_nom(:,k+1) = x_nom(:,k)+Ftil*delx(:,k)+Gtil*delu;
+    x(:,k+1) = x_nom(:,k+1)+Ftil*delx(:,k)+Gtil*delu;
     
-    delx(:,k+1)=x_nom(k+1)-x_nom(k);
+    delx(:,k+1)=x(k+1)-x_nom(k+1);
     
     y(:,k) = y_nom(k)+Htil*delx(:,k+1);
     
