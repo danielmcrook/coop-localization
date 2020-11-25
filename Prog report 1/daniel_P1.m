@@ -60,9 +60,9 @@ x0 = [xig etag thetag xia etaa thetaa]';
 x = x0;
 u = [vg phig va wa]';
 
-%% Observability
-O = [H; H*F; H*F^2; H*F^3; H*F^4; H*F^5; H*F^6];
-rank(O)
+%% Observability — N/A bc LTV
+% O = [H; H*F; H*F^2; H*F^3; H*F^4; H*F^5; H*F^6];
+% rank(O)
 
 %% Full Nonlinear Perturbation Dynamics
 % tspan = [0,100];
@@ -139,7 +139,7 @@ yk = @(xig,etag,thetag,xia,etaa,thetaa) [atan2((etaa-etag),(xia-xig))-thetag...
     atan2((etag-etaa),(xig-xia))-thetaa...
     xia etaa]';
 clear yt
-% t = 0:0.1:100;
+
 for i=1:length(t)
     xig = y(i,1);
     etag = y(i,2);
@@ -148,10 +148,6 @@ for i=1:length(t)
     etaa = y(i,5);
     thetaa = y(i,6);
     yt(:,i) = yk(xig,etag,thetag,xia,etaa,thetaa);
-    
-%     if t(i)>23.3
-%         ho=2;
-%     end
     
     % correct rad data
     gammaag = yt(1,i);
@@ -209,11 +205,31 @@ clear yk
 xk = x0;
 
 for k=1:1000
+    % Re-Linearize
+    xig = xk(1,k);
+    etag = xk(2,k);
+    thetag = xk(3,k);
+    xia = xk(4,k);
+    etaa = xk(5,k);
+    thetaa = xk(6,k);
+    % 
+    vg = 2;
+    va = 12;
+    phig = -pi/18;
+    % 
+    Alin = A(vg,thetag,va,thetaa);
+    Blin = B(thetag,L,phig,vg,thetaa);
+    Clin = C(xig,etag,xia,etaa);
+    
+    z = expm(DT*[Alin Blin; zeros(4,10)]);
+    F = z(1:6,1:6);
+    H = Clin;
+    
     xk(:,k+1) = F*xk(:,k);
     yk(:,k) = H*xk(:,k+1);
 end
 
-tk = linspace(0,k/10,k+1);
+tk = linspace(0,DT*k,k+1);
 
 %% DT LTI
 figure

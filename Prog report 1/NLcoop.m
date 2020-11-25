@@ -1,17 +1,20 @@
 function dx = NLcoop(~,y,u,g)
-%NLCOOP Summary of this function goes here
-%   Detailed explanation goes here
+% ode45 NL equations
 
-
+% States
 thetag = y(3);
 thetaa = y(6);
 
+% Controls
 vg = u(1);
 phig = u(2);
 va = u(3);
 wa = u(4);
 
-% switch cases
+% Extra parameters
+L = g;
+
+% Switch cases
 if wa > pi/6
     wa = pi/6;
 elseif wa < -pi/6
@@ -34,12 +37,8 @@ if vg > 3
     vg = 3;
 end
 
-
-
-L = g;
-
+% NL EOM
 dx = [vg*cos(thetag); vg*sin(thetag); vg*tan(phig)/L;...
     va*cos(thetaa); va*sin(thetaa); wa];
 
 end
-
