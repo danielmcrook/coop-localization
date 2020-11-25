@@ -60,14 +60,10 @@ x0 = [xig etag thetag xia etaa thetaa]';
 x = x0;
 u = [vg phig va wa]';
 
-%% Observability — N/A bc LTV
-% O = [H; H*F; H*F^2; H*F^3; H*F^4; H*F^5; H*F^6];
-% rank(O)
-
 %% Full Nonlinear Perturbation Dynamics
 % tspan = [0,100];
 tspan = 0:0.01:100;
-x0 = x0 + [0 1 0 0 0 0.1]';
+% x0 = x0 + [0 1 0 0 0 0.1]';
 [t,y] = ode45(@(t,y) NLcoop(t,y,u,L),tspan,x0);
 
 % correct rad data
@@ -89,48 +85,48 @@ end
 
 % States vs Time, Full NL Dynamics Simulation
 figure
-sgtitle('States vs Time, Full NL Dynamics')
+sgtitle('Full Nonlinear Model States','fontsize',20,'interpreter','latex')
 
 subplot(6,1,1); hold on; grid on; grid minor
-plot(t,y(:,1))
+plot(t,y(:,1),'Linewidth',1.35)
 ylim([10 20]);
-xlabel('Time [s]')
-ylabel('xig [m]')
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\xi_g$ [m]','fontsize',16,'interpreter','latex')
 hold off
 
 subplot(6,1,2); hold on; grid on; grid minor
-plot(t,y(:,2))
+plot(t,y(:,2),'Linewidth',1.35)
 ylim([-5 5]);
-xlabel('Time [s]')
-ylabel('etag [m]')
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\eta_g$ [m]','fontsize',16,'interpreter','latex')
 hold off
 
 subplot(6,1,3); hold on; grid on; grid minor
-plot(t,y(:,3))
+plot(t,y(:,3),'Linewidth',1.35)
 ylim([-5 5]);
-xlabel('Time [s]')
-ylabel('thetag [m]')
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\theta_g$ [m]','fontsize',16,'interpreter','latex')
 hold off
 
 subplot(6,1,4); hold on; grid on; grid minor
-plot(t,y(:,4))
+plot(t,y(:,4),'Linewidth',1.35)
 ylim([-200 200]);
-xlabel('Time [s]')
-ylabel('xia [m]')
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\xi_a$ [m]','fontsize',16,'interpreter','latex')
 hold off
 
 subplot(6,1,5); hold on; grid on; grid minor
-plot(t,y(:,5))
+plot(t,y(:,5),'Linewidth',1.35)
 ylim([-200 200]);
-xlabel('Time [s]')
-ylabel('etaa [m]')
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\eta_a$ [m]','fontsize',16,'interpreter','latex')
 hold off
 
 subplot(6,1,6); hold on; grid on; grid minor
-plot(t,y(:,6))
+plot(t,y(:,6),'Linewidth',1.35)
 ylim([-5 5]);
-xlabel('Time [s]')
-ylabel('thetaa [m]')
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\theta_a$ [m]','fontsize',16,'interpreter','latex')
 hold off
 
 %% Full Nonlinear Model Data Simulation
@@ -168,36 +164,36 @@ end
 yt = yt';
 
 figure
-sgtitle('Full Nonlinear Measurements')
+sgtitle('Full Nonlinear Model Measurements','fontsize',20,'interpreter','latex')
 
 subplot(5,1,1); hold on; grid on; grid minor
-plot(t,yt(:,1))
-xlabel('Time [s]')
-ylabel('gamma ag [rads]')
+plot(t,yt(:,1),'Linewidth',1.35)
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\gamma_{ag}$ [rads]','fontsize',16,'interpreter','latex')
 hold off
 
 subplot(5,1,2); hold on; grid on; grid minor
-plot(t,yt(:,2))
-xlabel('Time [s]')
-ylabel('rho ga [m]')
+plot(t,yt(:,2),'Linewidth',1.35)
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\rho_{ga}$ [m]','fontsize',16,'interpreter','latex')
 hold off
 
 subplot(5,1,3); hold on; grid on; grid minor
-plot(t,yt(:,3))
-xlabel('Time [s]')
-ylabel('gamma ga [rads]')
+plot(t,yt(:,3),'Linewidth',1.35)
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\gamma_{ga}$ [rads]','fontsize',16,'interpreter','latex')
 hold off
 
 subplot(5,1,4); hold on; grid on; grid minor
-plot(t,yt(:,4))
-xlabel('Time [s]')
-ylabel('xia [m]')
+plot(t,yt(:,4),'Linewidth',1.35)
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\xi_a$ [m]','fontsize',16,'interpreter','latex')
 hold off
 
 subplot(5,1,5); hold on; grid on; grid minor
-plot(t,yt(:,5))
-xlabel('Time [s]')
-ylabel('etaa [m]')
+plot(t,yt(:,5),'Linewidth',1.35)
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\eta_a$ [m]','fontsize',16,'interpreter','latex')
 hold off
 
 %% DT LTI Simulations
