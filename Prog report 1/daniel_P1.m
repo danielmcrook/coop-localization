@@ -134,11 +134,12 @@ ylabel('thetaa [m]')
 hold off
 
 %% Full Nonlinear Model Data Simulation
-yk = @(xig,etag,thetag,xia,etaa,thetaa) [atan((etaa-etag)/(xia-xig)) - thetag...
+yk = @(xig,etag,thetag,xia,etaa,thetaa) [atan2((etaa-etag),(xia-xig))-thetag...
     sqrt((xig-xia)^2 + (etag-etaa)^2)...
-    atan((etag-etaa)/(xig-xia)) - thetaa...
+    atan2((etag-etaa),(xig-xia))-thetaa...
     xia etaa]';
 clear yt
+% t = 0:0.1:100;
 for i=1:length(t)
     xig = y(i,1);
     etag = y(i,2);
@@ -147,6 +148,25 @@ for i=1:length(t)
     etaa = y(i,5);
     thetaa = y(i,6);
     yt(:,i) = yk(xig,etag,thetag,xia,etaa,thetaa);
+    
+%     if t(i)>23.3
+%         ho=2;
+%     end
+    
+    % correct rad data
+    gammaag = yt(1,i);
+    gammaga = yt(3,i);
+    if gammaag>pi
+        yt(1,i)=gammaag-2*pi;
+    elseif gammaag<-pi
+        yt(1,i)=gammaag+2*pi;
+    end
+    
+    if gammaga>pi
+        yt(3,i)=gammaga-2*pi;
+    elseif gammaga<-pi
+        yt(3,i)=gammaga+2*pi;
+    end
 end
 
 yt = yt';
