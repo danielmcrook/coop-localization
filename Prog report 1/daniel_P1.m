@@ -63,7 +63,7 @@ u = [vg phig va wa]';
 %% Full Nonlinear Perturbation Dynamics
 % tspan = [0,100];
 tspan = 0:0.01:100;
-% x0 = x0 + [0 1 0 0 0 0.1]';
+x0 = x0 + [0 1 0 0 0 0.1]';
 [t,y] = ode45(@(t,y) NLcoop(t,y,u,L),tspan,x0);
 
 % correct rad data
