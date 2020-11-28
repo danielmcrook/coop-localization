@@ -233,35 +233,41 @@ sgtitle('States v. Time, Linearized DT')
 
 subplot(6,1,1); hold on; grid on; grid minor
 plot(tk,xk(1,:))
+% plot(t,y(:,1))
 xlabel('Time [s]')
 ylabel('xig [m]')
 hold off
 
 subplot(6,1,2); hold on; grid on; grid minor
 plot(tk,xk(2,:))
+% plot(t,y(:,2))
 xlabel('Time [s]')
 ylabel('etag [m]')
 hold off
 
 subplot(6,1,3); hold on; grid on; grid minor
 plot(tk,xk(3,:))
+% plot(t,y(:,3))
 xlabel('Time [s]')
 ylabel('thetag [m]')
 hold off
 
 subplot(6,1,4); hold on; grid on; grid minor
 plot(tk,xk(4,:))
+% plot(t,y(:,4))
 xlabel('Time [s]')
 ylabel('xia [m]')
 hold off
 
 subplot(6,1,5); hold on; grid on; grid minor
 plot(tk,xk(5,:))
+% plot(t,y(:,5))
 xlabel('Time [s]')
 ylabel('etaa [m]')
 
 subplot(6,1,6); hold on; grid on; grid minor
 plot(tk,xk(6,:))
+% plot(t,y(:,6))
 xlabel('Time [s]')
 ylabel('thetaa [m]')
 hold off
@@ -273,34 +279,35 @@ sgtitle('Linearized DT Measurements')
 
 subplot(5,1,1); hold on; grid on; grid minor
 plot(tk,yk(1,:))
+% plot(t,yt(:,1))
 xlabel('Time [s]')
 ylabel('gamma ag [m]')
 hold off
 
 subplot(5,1,2); hold on; grid on; grid minor
 plot(tk,yk(2,:))
-% plot(t,y(:,2))
+% plot(t,yt(:,2))
 xlabel('Time [s]')
 ylabel('rho ga [m]')
 hold off
 
 subplot(5,1,3); hold on; grid on; grid minor
 plot(tk,yk(3,:))
-% plot(t,y(:,3))
+% plot(t,yt(:,3))
 xlabel('Time [s]')
 ylabel('gamma ga [m]')
 hold off
 
 subplot(5,1,4); hold on; grid on; grid minor
 plot(tk,yk(4,:))
-% plot(t,y(:,4))
+% plot(t,yt(:,4))
 xlabel('Time [s]')
 ylabel('xia [m]')
 hold off
 
 subplot(5,1,5); hold on; grid on; grid minor
 plot(tk,yk(5,:))
-% plot(t,y(:,5))
+% plot(t,yt(:,5))
 xlabel('Time [s]')
 ylabel('etaa [m]')
 hold off
