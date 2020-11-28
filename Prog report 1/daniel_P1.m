@@ -215,7 +215,6 @@ for k=1:1000
     thetaa = y(k,6);
     % Re-Linearize Matrices
     Alin = A(vg,thetag,va,thetaa);
-    Blin = B(thetag,L,phig,vg,thetaa);
     Clin = C(xig,etag,xia,etaa);
     
     F = eye(6) + DT*Alin;
