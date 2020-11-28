@@ -218,9 +218,8 @@ for k=1:1000
     Blin = B(thetag,L,phig,vg,thetaa);
     Clin = C(xig,etag,xia,etaa);
     
-    z = expm(DT*[Alin Blin; zeros(4,10)]);
-    F = z(1:6,1:6);
-    H = Clin;
+    F = eye(6) + DT*Alin;
+    H = DT*Clin;
     % DT Dynamical Simulation
     xk(:,k+1) = F*xk(:,k);
     yk(:,k) = H*xk(:,k+1);
