@@ -64,9 +64,9 @@ Ppkm1 = 1000000000000*ones(p);
 
 Lkm1 = I;
 Mk = eye(5);
-Qkm1 = 1000*Q; Rk = R;
+Qkm1 = 2000*Q; Rk = R;
 
-% xk = zeros(p,n);
+xk = zeros(p,n);
 % pk = zeros(p,n);
 xtrue = zeros(p,n);
 xtrue(:,1) = x0;
@@ -77,7 +77,7 @@ nis  = zeros(1,n-1);
 nees = zeros(1,n-1);
 NLdynrecord = zeros(p,n);
 NN = 100;
-xkrecord = zeros(p,n);
+
 for test=1:NN
     xk = zeros(p,n);
     xk(:,1) = x0;
@@ -129,37 +129,34 @@ for test=1:NN
 
         % NEES
         exk(k-1) = NEES(xtrue(:,k)-xk(:,k),Ppk);
-        
+
         Ppkm1 = Ppk;
     end
-    
-    xkrecord = xkrecord + xk;
-    nis = nis+epyk;
-    nees = nees+exk;
     if test<NN
         clear xk
     end
+    nis = nis+epyk;
+    nees = nees+exk;
 end
-xkrecord = xkrecord/NN;
 nis = nis/NN;
 nees = nees/NN;
-xk = xkrecord;
+
 % for i=1:n
 %     xk(:,i) = correct(xk(:,i));
 % end
 
 
-% figure; hold on
-% xlim([min([xk(1,:),xk(4,:)],[],'all') max([xk(1,:),xk(4,:)],[],'all')])
-% ylim([min([xk(2,:),xk(5,:)],[],'all') max([xk(2,:),xk(5,:)],[],'all')])
-% for i=3:n
-%     plot(xk(1,i-1:i),xk(2,i-1:i),'k','Linewidth',0.5)
-%     plot(NLdynrecord(1,i-1:i),NLdynrecord(2,i-1:i),'r','Linewidth',0.5)
-%     
-%     plot(xk(4,i-1:i),xk(5,i-1:i),'b','Linewidth',0.5)
-%     plot(NLdynrecord(4,i-1:i),NLdynrecord(5,i-1:i),'r','Linewidth',0.5)
-%     pause(.001)
-% end
+figure; hold on
+xlim([min([xk(1,:),xk(4,:)],[],'all') max([xk(1,:),xk(4,:)],[],'all')])
+ylim([min([xk(2,:),xk(5,:)],[],'all') max([xk(2,:),xk(5,:)],[],'all')])
+for i=2:n
+    plot(xk(1,i-1:i),xk(2,i-1:i),'k','Linewidth',0.75)
+    plot(NLdynrecord(1,i-1:1),NLdynrecord(2,i-1:i),'k','Linewidth',0.5)
+    
+    plot(xk(4,i-1:i),xk(5,i-1:i),'b','Linewidth',0.75)
+    plot(NLdynrecord(4,i-1:1),NLdynrecord(5,i-1:i),'r','Linewidth',0.5)
+    pause(.001)
+end
 
 
 %% EKF States
@@ -194,7 +191,7 @@ hold off
 
 subplot(6,1,3); hold on; grid on; grid minor
 plot(t,xtrue(3,:),'b','Linewidth',1)
-plot(t,xk(3,:),'k.','Linewidth',1.35)
+plot(t,xk(3,:),'k','Linewidth',1.35)
 % plot(t(10:end),xk(3,10:end)-pk(3,10:end),'b--','Linewidth',1)
 % plot(t(10:end),xk(3,10:end)+pk(3,10:end),'b--','Linewidth',1)
 % ylim([-5 5]);
@@ -229,7 +226,7 @@ hold off
 
 subplot(6,1,6); hold on; grid on; grid minor
 plot(t,xtrue(6,:),'b','Linewidth',1)
-plot(t,xk(6,:),'k.','Linewidth',1.35)
+plot(t,xk(6,:),'k','Linewidth',1.35)
 % plot(t(10:end),xk(6,10:end)-pk(6,10:end),'b--','Linewidth',1)
 % plot(t(10:end),xk(6,10:end)+pk(6,10:end),'b--','Linewidth',1)
 % ylim([-5 5]);
