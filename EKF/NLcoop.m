@@ -1,4 +1,4 @@
-function dx = NLcoop(~,y,u)
+function dx = NLcoop(~,y,u,W)
 % ode45 NL equations
 
 % States
@@ -39,6 +39,6 @@ end
 
 % NL EOM
 dx = [vg*cos(thetag); vg*sin(thetag); vg*tan(phig)/L;...
-    va*cos(thetaa); va*sin(thetaa); wa];
+    va*cos(thetaa); va*sin(thetaa); wa] + W;
 
 end
