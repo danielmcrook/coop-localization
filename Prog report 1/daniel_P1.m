@@ -197,6 +197,9 @@ ylabel('$\eta_a$ [m]','fontsize',16,'interpreter','latex')
 hold off
 
 %% DT LTI Simulations
+x0 = [xig etag thetag xia etaa thetaa]';
+[t,y] = ode45(@(t,y) NLcoop(t,y,u,L),tspan,x0);
+
 clear yk
 xk = [0 1 0 0 0 0.1]';
 
