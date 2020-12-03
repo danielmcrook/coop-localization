@@ -59,14 +59,14 @@ x0 = [xig etag thetag xia etaa thetaa]';
 u = [vg phig va wa]';
 %% Filter
 
-Ppkm1 = 0.1*eye(6);
+Ppkm1 = eye(6);
 
-% Q(1,1) = Q(1,1)*5;
-% Q(2,2) = Q(2,2)*5;
-% Q(3,3) = Q(3,3)*100;
-% Q(4,4) = Q(4,4)*100;
-% Q(5,5) = Q(5,5)*100;
-% Q(6,6) = Q(6,6)*100;
+Q(1,1) = Q(1,1)*10;
+Q(2,2) = Q(2,2)*10;
+Q(3,3) = Q(3,3)*100;
+Q(4,4) = Q(4,4)*0;
+Q(5,5) = Q(5,5)*500;
+Q(6,6) = Q(6,6)*100;
 
 
 Lkm1 = I;
@@ -75,8 +75,8 @@ Mk = eye(5);
 % Q(3) = 1.5*Q(3);
 % Q(4:5) = 50*Q(4:5);
 % Q(3) = 1.5*Q(3);
-% Q = 75*Q;
-Qkm1 = 50*Q; Rk = R;
+% Q = Q;
+Qkm1 = Q; Rk = R;
 
 P0 = diag([.01 .01 .001 .01 .01 .001])/2;
 % Ppkm1 = P0;
@@ -91,11 +91,10 @@ exk  = zeros(1,n-1);
 nis  = zeros(1,n-1);
 nees = zeros(1,n-1);
 NLdynrecord = zeros(p,n);
-NN = 25;
+NN = 50;
 xkrecord = zeros(p,n);
 nldyn = zeros(p,n);
 pk = zeros(p,n);
-pkrecord = zeros(p,n);
 
 for test=1:NN
     xk = zeros(p,n);
@@ -114,7 +113,7 @@ for test=1:NN
         
         % State Estimate
         W = sqrt(Q)*randn(6,1);
-        xmk = correct(NLdyn(xk(:,k-1),u,W)); % NL Dyn not re-ligning up with xpkm1
+        xmk = correct(NLdyn(xk(:,k-1),u,W));
         % record NL state estimate
         nldyn(:,k) = xmk;
         
@@ -154,7 +153,6 @@ for test=1:NN
     end
     
     xkrecord = xkrecord + xk;
-    pkrecord = pkrecord + pk;
     NLdynrecord = NLdynrecord + nldyn;
     nis = nis+epyk;
     nees = nees+exk;
@@ -163,13 +161,11 @@ for test=1:NN
     end
 end
 xkrecord = xkrecord/NN;
-pkrecord = pkrecord/NN;
 NLdynrecord = NLdynrecord/NN;
 nis = nis/NN;
 nees = nees/NN;
 xk = xkrecord;
 xtrue = NLdynrecord;
-pk = pkrecord;
 
 
 % figure; hold on
@@ -330,7 +326,7 @@ hold off
 
 %% NIS
 
-alpha = 0.01;
+alpha = 0.001;
 r1 = chi2inv(alpha/2,NN*p)/NN;
 r2 = chi2inv(1- alpha/2,NN*p)/NN;
 
