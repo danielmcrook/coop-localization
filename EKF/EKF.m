@@ -76,7 +76,10 @@ Mk = eye(5);
 % Q(4:5) = 50*Q(4:5);
 % Q(3) = 1.5*Q(3);
 % Q = 75*Q;
-Qkm1 = 50*Q; Rk = R;
+% Qkm1 = Q;
+Q = Q*diag([0.01 0.01 0.75 0.01 0.01 0.75]);
+Qkm1 = Q;
+Rk = R;
 
 P0 = diag([.01 .01 .001 .01 .01 .001])/2;
 % Ppkm1 = P0;
@@ -91,12 +94,14 @@ exk  = zeros(1,n-1);
 nis  = zeros(1,n-1);
 nees = zeros(1,n-1);
 NLdynrecord = zeros(p,n);
-NN = 25;
+NN = 50;
 xkrecord = zeros(p,n);
 nldyn = zeros(p,n);
 pk = zeros(p,n);
 pkrecord = zeros(p,n);
-
+EXKrec = zeros(p,n-1);
+EYKrec = zeros(p-1,n-1);
+skrecord = zeros(p-1,n-1);
 for test=1:NN
     xk = zeros(p,n);
     xk(:,1) = mvnrnd(x0,P0);
@@ -131,30 +136,34 @@ for test=1:NN
             ydata(2,k)-pred(2); ...
             -angdiff(ydata(3,k),pred(3)); ...
             ydata(4:5,k)-pred(4:5)];
-        
+        eykrec(:,k-1) = eykp1;
         % NIS
         epyk(k-1) = NIS(eykp1,Hk,Pmk,R);
-
+        
         % Update State Estimate
         xk(:,k) = correct(xmk + Kk*eykp1);
-
+        
         % Update Estimation-Error Covariance
         Ppk = (I - Kk*Hk)*Pmk;
         pk(:,k) = [2*sqrt(Ppk(1,1)) 2*sqrt(Ppk(2,2)) 2*sqrt(Ppk(3,3))...
             2*sqrt(Ppk(4,4)) 2*sqrt(Ppk(5,5)) 2*sqrt(Ppk(6,6))]';
         
-        xtrue(:,k) = correct(NLdyn(xtrue(:,k-1),u,W));
+        sk(:,k-1) = 2*sqrt(diag(Hk*Pmk*Hk' + R));
+        
+        xtrue(:,k) = correct(NLdyn(xk(:,k-1),u,W));
         
         % NEES
         diff = [xtrue(1:2,k)-xk(1:2,k); angdiff(xtrue(3,k),xk(3,k)); ...
             xtrue(4:5,k)-xk(4:5,k); angdiff(xtrue(6,k),xk(6,k))];
         exk(k-1) = NEES(diff,Ppk);
-        
+        exkrec(:,k-1) = diff;
         Ppkm1 = Ppk;
     end
-    
+    EYKrec = EYKrec + eykrec;
+    EXKrec = EXKrec + exkrec;
     xkrecord = xkrecord + xk;
     pkrecord = pkrecord + pk;
+    skrecord = skrecord + sk;
     NLdynrecord = NLdynrecord + nldyn;
     nis = nis+epyk;
     nees = nees+exk;
@@ -162,14 +171,19 @@ for test=1:NN
         clear xk
     end
 end
+EYKrec = EYKrec/NN;
+EXKrec = EXKrec/NN;
 xkrecord = xkrecord/NN;
 pkrecord = pkrecord/NN;
+skrecord = skrecord/NN;
 NLdynrecord = NLdynrecord/NN;
 nis = nis/NN;
 nees = nees/NN;
-xk = xkrecord;
-xtrue = NLdynrecord;
+% xk = xkrecord;
+% xtrue = NLdynrecord;
 pk = pkrecord;
+
+
 
 
 % figure; hold on
@@ -183,6 +197,134 @@ pk = pkrecord;
 %     plot(NLdynrecord(4,i-1:i),NLdynrecord(5,i-1:i),'r','Linewidth',0.5)
 %     pause(.001)
 % end
+
+%% EXK Errors
+
+figure
+sgtitle('exk errors','fontsize',20,'interpreter','latex')
+
+subplot(6,1,1); hold on; grid on; grid minor
+plot(t(2:end),EXKrec(1,:),'Linewidth',1.5)
+plot(t(10:end),-pkrecord(1,10:end),'k--','Linewidth',2)
+plot(t(10:end),pkrecord(1,10:end),'k--','Linewidth',2)
+% ylim([10 20]);
+legend('exk','sk 2 sig')
+% xlim([5 100]);
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\xi_g$ [m]','fontsize',16,'interpreter','latex')
+hold off
+
+subplot(6,1,2); hold on; grid on; grid minor
+plot(t(2:end),EXKrec(2,:),'Linewidth',1.5)
+plot(t(10:end),-pkrecord(2,10:end),'k--','Linewidth',2)
+plot(t(10:end),pkrecord(2,10:end),'k--','Linewidth',2)
+% xlim([5 100]);
+legend('exk','sk 2 sig')
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\eta_g$ [m]','fontsize',16,'interpreter','latex')
+hold off
+
+subplot(6,1,3); hold on; grid on; grid minor
+plot(t(2:end),EXKrec(3,:),'Linewidth',1.5)
+plot(t(10:end),-pkrecord(3,10:end),'k--','Linewidth',2)
+plot(t(10:end),pkrecord(3,10:end),'k--','Linewidth',2)
+% xlim([5 100]);
+legend('exk','sk 2 sig')
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\theta_g$ [m]','fontsize',16,'interpreter','latex')
+hold off
+
+subplot(6,1,4); hold on; grid on; grid minor
+plot(t(2:end),EXKrec(4,:),'Linewidth',1.5)
+plot(t(10:end),-pkrecord(4,10:end),'k--','Linewidth',2)
+plot(t(10:end),pkrecord(4,10:end),'k--','Linewidth',2)
+% plot(t,ydata(4,:))
+legend('exk','sk 2 sig')
+% xlim([5 100]);
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\xi_a$ [m]','fontsize',16,'interpreter','latex')
+hold off
+
+subplot(6,1,5); hold on; grid on; grid minor
+plot(t(2:end),EXKrec(5,:),'Linewidth',1.5)
+plot(t(10:end),-pkrecord(5,10:end),'k--','Linewidth',2)
+plot(t(10:end),pkrecord(5,10:end),'k--','Linewidth',2)
+% plot(t,ydata(5,:))
+legend('exk','sk 2 sig')
+% xlim([5 100]);
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\eta_a$ [m]','fontsize',16,'interpreter','latex')
+hold off
+
+subplot(6,1,6); hold on; grid on; grid minor
+plot(t(2:end),EXKrec(6,:),'Linewidth',1.5)
+plot(t(10:end),-pkrecord(6,10:end),'k--','Linewidth',2)
+plot(t(10:end),pkrecord(6,10:end),'k--','Linewidth',2)
+% plot(t,ydata(5,:))
+legend('exk','sk 2 sig')
+% xlim([5 100]);
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\theta_a$ [m]','fontsize',16,'interpreter','latex')
+hold off
+
+
+%% EYK Errors
+
+figure
+sgtitle('eyk errors','fontsize',20,'interpreter','latex')
+
+subplot(5,1,1); hold on; grid on; grid minor
+plot(t(2:end),EYKrec(1,:),'Linewidth',1.5)
+plot(t(11:end),-skrecord(1,10:end),'k--','Linewidth',2)
+plot(t(11:end),skrecord(1,10:end),'k--','Linewidth',2)
+% ylim([10 20]);
+legend('eyk','sk 2 sig')
+% xlim([5 100]);
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\gamma_{ag}$ [m]','fontsize',16,'interpreter','latex')
+hold off
+
+subplot(5,1,2); hold on; grid on; grid minor
+plot(t(2:end),EYKrec(2,:),'Linewidth',1.5)
+plot(t(11:end),-skrecord(2,10:end),'k--','Linewidth',2)
+plot(t(11:end),skrecord(2,10:end),'k--','Linewidth',2)
+% xlim([5 100]);
+legend('eyk','sk 2 sig')
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\rho_{ga}$ [m]','fontsize',16,'interpreter','latex')
+hold off
+
+subplot(5,1,3); hold on; grid on; grid minor
+plot(t(2:end),EYKrec(3,:),'Linewidth',1.5)
+plot(t(11:end),-skrecord(3,10:end),'k--','Linewidth',2)
+plot(t(11:end),skrecord(3,10:end),'k--','Linewidth',2)
+% xlim([5 100]);
+legend('eyk','sk 2 sig')
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\gamma_{ga}$ [m]','fontsize',16,'interpreter','latex')
+hold off
+
+subplot(5,1,4); hold on; grid on; grid minor
+plot(t(2:end),EYKrec(4,:),'Linewidth',1.5)
+plot(t(11:end),-skrecord(4,10:end),'k--','Linewidth',2)
+plot(t(11:end),skrecord(4,10:end),'k--','Linewidth',2)
+% plot(t,ydata(4,:))
+legend('eyk','sk 2 sig')
+% xlim([5 100]);
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\xi_a$ [m]','fontsize',16,'interpreter','latex')
+hold off
+
+subplot(5,1,5); hold on; grid on; grid minor
+plot(t(2:end),EYKrec(5,:),'Linewidth',1.5)
+plot(t(11:end),-skrecord(5,10:end),'k--','Linewidth',2)
+plot(t(11:end),skrecord(5,10:end),'k--','Linewidth',2)
+% plot(t,ydata(5,:))
+legend('eyk','sk 2 sig')
+% xlim([5 100]);
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\eta_a$ [m]','fontsize',16,'interpreter','latex')
+hold off
 
 
 %% EKF States
@@ -317,8 +459,8 @@ hold off
 %% NEES
 
 alpha = 0.01;
-r1 = chi2inv(alpha/2,NN*n)/NN;
-r2 = chi2inv(1- alpha/2,NN*n)/NN;
+r1 = chi2inv(alpha/2,NN*6)/(NN);
+r2 = chi2inv(1- alpha/2,NN*6)/(NN);
 
 figure; subplot(2,1,1)
 hold on
@@ -331,8 +473,8 @@ hold off
 %% NIS
 
 alpha = 0.01;
-r1 = chi2inv(alpha/2,NN*p)/NN;
-r2 = chi2inv(1- alpha/2,NN*p)/NN;
+r1 = chi2inv(alpha/2,NN*5)/NN;
+r2 = chi2inv(1- alpha/2,NN*5)/NN;
 
 subplot(2,1,2)
 hold on
