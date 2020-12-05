@@ -67,15 +67,17 @@ u = [vg phig va wa]';
 % Q(6,6) = Q(6,6)*100;
 
 
-Lkm1 = I;
-Mk = eye(5);
 % Q(1:2) = 50*Q(1:2);
 % Q(3) = 1.5*Q(3);
 % Q(4:5) = 50*Q(4:5);
 % Q(3) = 1.5*Q(3);
 % Q = 75*Q;
 % Qkm1 = Q;
-Q = Q*diag([0.01 0.01 0.75 0.01 0.01 0.75]);
+Q = Q*diag([0.0001 0.0001 0.75/2 0.00001 0.00001 0.75/2]);
+Q(1,3) = 0.0001;  Q(3,1) = 0.0001;
+Q(2,3) = 0.0001;  Q(3,2) = 0.0001;
+Q(4,6) = 0.0001;  Q(6,4) = 0.0001;
+Q(5,6) = 0.0001;  Q(6,5) = 0.0001;
 Qkm1 = Q;
 Rk = R;
 
@@ -112,7 +114,7 @@ for test=1:NN
         Fkm1 = Fpred(vg,thetag,va,thetaa);
         
         % Estimation-Error Covariance
-        Pmk = Fkm1*Ppkm1*Fkm1' + Lkm1*Qkm1*Lkm1';
+        Pmk = Fkm1*Ppkm1*Fkm1' + Qkm1;
         
         % State Estimate
         W = sqrt(Q)*randn(6,1);
@@ -124,7 +126,7 @@ for test=1:NN
         Hk = Hpred(xmk(1),xmk(2),xmk(4),xmk(5));
         
         % Kalman Gain
-        Kk  = Pmk*Hk' / (Hk*Pmk*Hk' + Mk*Rk*Mk');
+        Kk  = Pmk*Hk' / (Hk*Pmk*Hk' + Rk);
         
         % Nonlinear Measurement Innovation
         pred = NLmeas(xmk);
