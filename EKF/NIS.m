@@ -2,18 +2,11 @@ function epyk = NIS(eyk,H,Pmk,R)
 %NIS Summary of this function goes here
 %   Detailed explanation goes here
 
-% cent = inv(chol(R,'lower'));
-% cent = inv(chol(R,'lower'));
+sk = H*Pmk*H' + R;
+Sk = 0.5*(sk + sk');
 
-epyk = eyk'*inv(H*Pmk*H' + R)*eyk;
 
-% for k=1:size(eyk,2)
-%     
-%     epyk(k) = eyk(:,k)'*cent*eyk(:,k);
-%     
-%     
-%     
-% end
+epyk = eyk'*inv(Sk)*eyk;
 
 end
 

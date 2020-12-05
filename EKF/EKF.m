@@ -59,8 +59,6 @@ x0 = [xig etag thetag xia etaa thetaa]';
 u = [vg phig va wa]';
 %% Filter
 
-Ppkm1 = diag([1 1 0.1 1 1 0.1]);
-
 % Q(1,1) = Q(1,1)*5;
 % Q(2,2) = Q(2,2)*5;
 % Q(3,3) = Q(3,3)*100;
@@ -69,21 +67,22 @@ Ppkm1 = diag([1 1 0.1 1 1 0.1]);
 % Q(6,6) = Q(6,6)*100;
 
 
-Lkm1 = I;
-Mk = eye(5);
 % Q(1:2) = 50*Q(1:2);
 % Q(3) = 1.5*Q(3);
 % Q(4:5) = 50*Q(4:5);
 % Q(3) = 1.5*Q(3);
 % Q = 75*Q;
 % Qkm1 = Q;
-Q = Q*diag([0.01 0.01 0.75 0.01 0.01 0.75]);
+Q = Q*diag([0.0001 0.0001 0.75/2 0.00001 0.00001 0.75/2]);
+Q(1,3) = 0.0001;  Q(3,1) = 0.0001;
+Q(2,3) = 0.0001;  Q(3,2) = 0.0001;
+Q(4,6) = 0.0001;  Q(6,4) = 0.0001;
+Q(5,6) = 0.0001;  Q(6,5) = 0.0001;
 Qkm1 = Q;
 Rk = R;
 
 P0 = diag([.01 .01 .001 .01 .01 .001]);
-% Ppkm1 = P0;
-
+Ppkm1 = P0;
 % xk = zeros(p,n);
 % pk = zeros(p,n);
 xtrue = zeros(p,n);
@@ -94,7 +93,7 @@ exk  = zeros(1,n-1);
 nis  = zeros(1,n-1);
 nees = zeros(1,n-1);
 NLdynrecord = zeros(p,n);
-NN = 1;
+NN = 25;
 xkrecord = zeros(p,n);
 nldyn = zeros(p,n);
 pk = zeros(p,n);
@@ -115,7 +114,7 @@ for test=1:NN
         Fkm1 = Fpred(vg,thetag,va,thetaa);
         
         % Estimation-Error Covariance
-        Pmk = Fkm1*Ppkm1*Fkm1' + Lkm1*Qkm1*Lkm1';
+        Pmk = Fkm1*Ppkm1*Fkm1' + Qkm1;
         
         % State Estimate
         W = sqrt(Q)*randn(6,1);
@@ -127,7 +126,7 @@ for test=1:NN
         Hk = Hpred(xmk(1),xmk(2),xmk(4),xmk(5));
         
         % Kalman Gain
-        Kk  = Pmk*Hk' / (Hk*Pmk*Hk' + Mk*Rk*Mk');
+        Kk  = Pmk*Hk' / (Hk*Pmk*Hk' + Rk);
         
         % Nonlinear Measurement Innovation
         pred = NLmeas(xmk);
@@ -153,8 +152,8 @@ for test=1:NN
         xtrue(:,k) = correct(NLdyn(xk(:,k-1),u,W));
         
         % NEES
-        diff = [xtrue(1:2,k)-xk(1:2,k); angdiff(xtrue(3,k),xk(3,k)); ...
-            xtrue(4:5,k)-xk(4:5,k); angdiff(xtrue(6,k),xk(6,k))];
+        diff = [xtrue(1:2,k)-xk(1:2,k); -angdiff(xtrue(3,k),xk(3,k)); ...
+            xtrue(4:5,k)-xk(4:5,k); -angdiff(xtrue(6,k),xk(6,k))];
         exk(k-1) = NEES(diff,Ppk);
         exkrec(:,k-1) = diff;
         Ppkm1 = Ppk;
@@ -260,61 +259,48 @@ hold off
 
 %% EYK Errors
 
-% figure
-% sgtitle('eyk errors','fontsize',20,'interpreter','latex')
-% 
-% subplot(5,1,1); hold on; grid on; grid minor
-% plot(t(2:end),EYKrec(1,:),'Linewidth',1.5)
-% plot(t(11:end),-skrecord(1,10:end),'k--','Linewidth',2)
-% plot(t(11:end),skrecord(1,10:end),'k--','Linewidth',2)
-% % ylim([10 20]);
-% legend('eyk','sk 2 sig')
-% % xlim([5 100]);
-% xlabel('Time [s]','fontsize',16,'interpreter','latex')
-% ylabel('$\gamma_{ag}$ [m]','fontsize',16,'interpreter','latex')
-% hold off
-% 
-% subplot(5,1,2); hold on; grid on; grid minor
-% plot(t(2:end),EYKrec(2,:),'Linewidth',1.5)
-% plot(t(11:end),-skrecord(2,10:end),'k--','Linewidth',2)
-% plot(t(11:end),skrecord(2,10:end),'k--','Linewidth',2)
-% % xlim([5 100]);
-% legend('eyk','sk 2 sig')
-% xlabel('Time [s]','fontsize',16,'interpreter','latex')
-% ylabel('$\rho_{ga}$ [m]','fontsize',16,'interpreter','latex')
-% hold off
-% 
-% subplot(5,1,3); hold on; grid on; grid minor
-% plot(t(2:end),EYKrec(3,:),'Linewidth',1.5)
-% plot(t(11:end),-skrecord(3,10:end),'k--','Linewidth',2)
-% plot(t(11:end),skrecord(3,10:end),'k--','Linewidth',2)
-% % xlim([5 100]);
-% legend('eyk','sk 2 sig')
-% xlabel('Time [s]','fontsize',16,'interpreter','latex')
-% ylabel('$\gamma_{ga}$ [m]','fontsize',16,'interpreter','latex')
-% hold off
-% 
-% subplot(5,1,4); hold on; grid on; grid minor
-% plot(t(2:end),EYKrec(4,:),'Linewidth',1.5)
-% plot(t(11:end),-skrecord(4,10:end),'k--','Linewidth',2)
-% plot(t(11:end),skrecord(4,10:end),'k--','Linewidth',2)
-% % plot(t,ydata(4,:))
-% legend('eyk','sk 2 sig')
-% % xlim([5 100]);
-% xlabel('Time [s]','fontsize',16,'interpreter','latex')
-% ylabel('$\xi_a$ [m]','fontsize',16,'interpreter','latex')
-% hold off
-% 
-% subplot(5,1,5); hold on; grid on; grid minor
-% plot(t(2:end),EYKrec(5,:),'Linewidth',1.5)
-% plot(t(11:end),-skrecord(5,10:end),'k--','Linewidth',2)
-% plot(t(11:end),skrecord(5,10:end),'k--','Linewidth',2)
-% % plot(t,ydata(5,:))
-% legend('eyk','sk 2 sig')
-% % xlim([5 100]);
-% xlabel('Time [s]','fontsize',16,'interpreter','latex')
-% ylabel('$\eta_a$ [m]','fontsize',16,'interpreter','latex')
-% hold off
+figure
+sgtitle('$e_{y,k}$ with $2\sigma$ bounds from $S_k^+$','fontsize',24,'interpreter','latex')
+
+subplot(5,1,1); hold on; grid on; grid minor
+plot(t(2:end),EYKrec(1,:),'Linewidth',2)
+plot(t(2:end),-skrecord(1,:),'k--','Linewidth',2)
+plot(t(2:end),skrecord(1,:),'k--','Linewidth',2)
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\gamma_{ag}$ [m]','fontsize',20,'interpreter','latex')
+hold off
+
+subplot(5,1,2); hold on; grid on; grid minor
+plot(t(2:end),EYKrec(2,:),'Linewidth',2)
+plot(t(2:end),-skrecord(2,:),'k--','Linewidth',2)
+plot(t(2:end),skrecord(2,:),'k--','Linewidth',2)
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\rho_{ga}$ [m]','fontsize',20,'interpreter','latex')
+hold off
+
+subplot(5,1,3); hold on; grid on; grid minor
+plot(t(2:end),EYKrec(3,:),'Linewidth',2)
+plot(t(2:end),-skrecord(3,:),'k--','Linewidth',2)
+plot(t(2:end),skrecord(3,:),'k--','Linewidth',2)
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\gamma_{ga}$ [m]','fontsize',20,'interpreter','latex')
+hold off
+
+subplot(5,1,4); hold on; grid on; grid minor
+plot(t(2:end),EYKrec(4,:),'Linewidth',2)
+plot(t(2:end),-skrecord(4,:),'k--','Linewidth',2)
+plot(t(2:end),skrecord(4,:),'k--','Linewidth',2)
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\xi_a$ [m]','fontsize',20,'interpreter','latex')
+hold off
+
+subplot(5,1,5); hold on; grid on; grid minor
+plot(t(2:end),EYKrec(5,:),'Linewidth',2)
+plot(t(2:end),-skrecord(5,:),'k--','Linewidth',2)
+plot(t(2:end),skrecord(5,:),'k--','Linewidth',2)
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\eta_a$ [m]','fontsize',20,'interpreter','latex')
+hold off
 
 
 %% EKF States
@@ -326,141 +312,136 @@ hold off
 % xtrue = NLdynrecord;
 
 figure
-sgtitle('Filter vs Measurments','fontsize',20,'interpreter','latex')
+sgtitle('Simulated Ground Truth','fontsize',24,'interpreter','latex')
 
 subplot(6,1,1); hold on; grid on; grid minor
-plot(t,xtrue(1,:),'b','Linewidth',1)
-plot(t,xk(1,:),'k','Linewidth',1.35)
-plot(t(10:end),xk(1,10:end)-pk(1,10:end),'b--','Linewidth',1)
-plot(t(10:end),xk(1,10:end)+pk(1,10:end),'b--','Linewidth',1)
-% ylim([10 20]);
-legend('NLdyn','filter')
+% plot(t,xtrue(1,:),'b','Linewidth',1)
+plot(t,xk(1,:),'Linewidth',2)
+% plot(t(10:end),xk(1,10:end)-pk(1,10:end),'b--','Linewidth',1)
+% plot(t(10:end),xk(1,10:end)+pk(1,10:end),'b--','Linewidth',1)
+% legend('NLdyn','filter')
 xlabel('Time [s]','fontsize',16,'interpreter','latex')
-ylabel('$\xi_g$ [m]','fontsize',16,'interpreter','latex')
+ylabel('$\xi_g$ [m]','fontsize',20,'interpreter','latex')
 hold off
 
 subplot(6,1,2); hold on; grid on; grid minor
-plot(t,xtrue(2,:),'b','Linewidth',1)
-plot(t,xk(2,:),'k','Linewidth',1.35)
-plot(t(10:end),xk(2,10:end)-pk(2,10:end),'b--','Linewidth',1)
-plot(t(10:end),xk(2,10:end)+pk(2,10:end),'b--','Linewidth',1)
-% ylim([-5 5]);
-legend('NLdyn','filter')
+% plot(t,xtrue(2,:),'b','Linewidth',1)
+plot(t,xk(2,:),'Linewidth',2)
+% plot(t(10:end),xk(2,10:end)-pk(2,10:end),'b--','Linewidth',1)
+% plot(t(10:end),xk(2,10:end)+pk(2,10:end),'b--','Linewidth',1)
+% legend('NLdyn','filter')
 xlabel('Time [s]','fontsize',16,'interpreter','latex')
-ylabel('$\eta_g$ [m]','fontsize',16,'interpreter','latex')
+ylabel('$\eta_g$ [m]','fontsize',20,'interpreter','latex')
 hold off
 
 subplot(6,1,3); hold on; grid on; grid minor
-plot(t,xtrue(3,:),'b.','Linewidth',1)
-plot(t,xk(3,:),'k.','Linewidth',1.35)
+% plot(t,xtrue(3,:),'b.','Linewidth',1)
+plot(t,xk(3,:),'Linewidth',2)
 % plot(t(10:end),xk(3,10:end)-pk(3,10:end),'b--','Linewidth',1)
 % plot(t(10:end),xk(3,10:end)+pk(3,10:end),'b--','Linewidth',1)
-% ylim([-5 5]);
-legend('NLdyn','filter')
 xlabel('Time [s]','fontsize',16,'interpreter','latex')
-ylabel('$\theta_g$ [m]','fontsize',16,'interpreter','latex')
+ylabel('$\theta_g$ [rad]','fontsize',20,'interpreter','latex')
 hold off
 
 subplot(6,1,4); hold on; grid on; grid minor
-plot(t,xtrue(4,:),'b','Linewidth',1)
-plot(t,xk(4,:),'k','Linewidth',1.35)
-plot(t(10:end),xk(4,10:end)-pk(4,10:end),'b--','Linewidth',1)
-plot(t(10:end),xk(4,10:end)+pk(4,10:end),'b--','Linewidth',1)
-plot(t,ydata(4,:))
-legend('NLdyn','filter','meas.')
-% ylim([-200 200]);
+% plot(t,xtrue(4,:),'b','Linewidth',1)
+plot(t,xk(4,:),'Linewidth',2)
+% plot(t(10:end),xk(4,10:end)-pk(4,10:end),'b--','Linewidth',1)
+% plot(t(10:end),xk(4,10:end)+pk(4,10:end),'b--','Linewidth',1)
+% plot(t,ydata(4,:))
+% legend('NLdyn','filter','meas.')
 xlabel('Time [s]','fontsize',16,'interpreter','latex')
-ylabel('$\xi_a$ [m]','fontsize',16,'interpreter','latex')
+ylabel('$\xi_a$ [m]','fontsize',20,'interpreter','latex')
 hold off
 
 subplot(6,1,5); hold on; grid on; grid minor
-plot(t,xtrue(5,:),'b','Linewidth',1)
-plot(t,xk(5,:),'k','Linewidth',1.35)
-plot(t(10:end),xk(5,10:end)-pk(5,10:end),'b--','Linewidth',1)
-plot(t(10:end),xk(5,10:end)+pk(5,10:end),'b--','Linewidth',1)
-plot(t,ydata(5,:))
-legend('NLdyn','filter','meas.')
-% ylim([-200 200]);
+% plot(t,xtrue(5,:),'b','Linewidth',1)
+plot(t,xk(5,:),'Linewidth',2)
+% plot(t(10:end),xk(5,10:end)-pk(5,10:end),'b--','Linewidth',1)
+% plot(t(10:end),xk(5,10:end)+pk(5,10:end),'b--','Linewidth',1)
+% plot(t,ydata(5,:))
+% legend('NLdyn','filter','meas.')
 xlabel('Time [s]','fontsize',16,'interpreter','latex')
-ylabel('$\eta_a$ [m]','fontsize',16,'interpreter','latex')
+ylabel('$\eta_a$ [m]','fontsize',20,'interpreter','latex')
 hold off
 
 subplot(6,1,6); hold on; grid on; grid minor
-plot(t,xtrue(6,:),'b.','Linewidth',1)
-plot(t,xk(6,:),'k.','Linewidth',1.35)
+% plot(t,xtrue(6,:),'b.','Linewidth',1)
+plot(t,xk(6,:),'Linewidth',2)
 % plot(t(10:end),xk(6,10:end)-pk(6,10:end),'b--','Linewidth',1)
 % plot(t(10:end),xk(6,10:end)+pk(6,10:end),'b--','Linewidth',1)
-% ylim([-5 5]);
-legend('NLdyn','filter')
+% legend('NLdyn','filter')
 xlabel('Time [s]','fontsize',16,'interpreter','latex')
-ylabel('$\theta_a$ [m]','fontsize',16,'interpreter','latex')
+ylabel('$\theta_a$ [rad]','fontsize',20,'interpreter','latex')
 hold off
 
 %% Noisy Measurements
-% nlmeas = zeros(5,n);
-% 
-% for k=1:length(xk)
-%     nlmeas(:,k) = NLmeas(xk(:,k));
-%     nlmeas(1,k) = wrapToPi(nlmeas(1,k));
-%     nlmeas(3,k) = wrapToPi(nlmeas(3,k));
-% end
-% 
-% 
-% figure
-% sgtitle('Noisy Measurements','fontsize',20,'interpreter','latex')
-% 
-% subplot(5,1,1); hold on; grid on; grid minor
+nlmeas = zeros(5,n);
+
+for k=1:length(xk)
+    nlmeas(:,k) = NLmeas(xk(:,k));
+    nlmeas(1,k) = wrapToPi(nlmeas(1,k));
+    nlmeas(3,k) = wrapToPi(nlmeas(3,k));
+end
+
+
+figure
+sgtitle('Simulated Data','fontsize',24,'interpreter','latex')
+
+subplot(5,1,1); hold on; grid on; grid minor
 % plot(t,ydata(1,:),'b','Linewidth',1.5)
-% plot(t,nlmeas(1,:),'r','Linewidth',0.75)
+plot(t,nlmeas(1,:),'Linewidth',2)
 % legend('ydata','computed')
-% xlabel('Time [s]','fontsize',16,'interpreter','latex')
-% ylabel('$\gamma_{ag}$ [rads]','fontsize',16,'interpreter','latex')
-% hold off
-% 
-% subplot(5,1,2); hold on; grid on; grid minor
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\gamma_{ag}$ [rads]','fontsize',20,'interpreter','latex')
+hold off
+
+subplot(5,1,2); hold on; grid on; grid minor
 % plot(t,ydata(2,:),'b','Linewidth',1.5)
-% plot(t,nlmeas(2,:),'r','Linewidth',0.75)
+plot(t,nlmeas(2,:),'Linewidth',2)
 % legend('ydata','computed')
-% xlabel('Time [s]','fontsize',16,'interpreter','latex')
-% ylabel('$\rho_{ga}$ [m]','fontsize',16,'interpreter','latex')
-% hold off
-% 
-% subplot(5,1,3); hold on; grid on; grid minor
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\rho_{ga}$ [m]','fontsize',20,'interpreter','latex')
+hold off
+
+subplot(5,1,3); hold on; grid on; grid minor
 % plot(t,ydata(3,:),'b','Linewidth',1.5)
-% plot(t,nlmeas(3,:),'r','Linewidth',0.75)
+plot(t,nlmeas(3,:),'Linewidth',2)
 % legend('ydata','computed')
-% xlabel('Time [s]','fontsize',16,'interpreter','latex')
-% ylabel('$\gamma_{ga}$ [rads]','fontsize',16,'interpreter','latex')
-% hold off
-% 
-% subplot(5,1,4); hold on; grid on; grid minor
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\gamma_{ga}$ [rads]','fontsize',20,'interpreter','latex')
+hold off
+
+subplot(5,1,4); hold on; grid on; grid minor
 % plot(t,ydata(4,:),'b','Linewidth',1.5)
-% plot(t,nlmeas(4,:),'r','Linewidth',0.75)
+plot(t,nlmeas(4,:),'Linewidth',2)
 % legend('ydata','computed')
-% xlabel('Time [s]','fontsize',16,'interpreter','latex')
-% ylabel('$\xi_a$ [m]','fontsize',16,'interpreter','latex')
-% hold off
-% 
-% subplot(5,1,5); hold on; grid on; grid minor
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\xi_a$ [m]','fontsize',20,'interpreter','latex')
+hold off
+
+subplot(5,1,5); hold on; grid on; grid minor
 % plot(t,ydata(5,:),'b','Linewidth',1.5)
-% plot(t,nlmeas(5,:),'r','Linewidth',0.75)
+plot(t,nlmeas(5,:),'Linewidth',2)
 % legend('ydata','computed')
-% xlabel('Time [s]','fontsize',16,'interpreter','latex')
-% ylabel('$\eta_a$ [m]','fontsize',16,'interpreter','latex')
-% hold off
+xlabel('Time [s]','fontsize',16,'interpreter','latex')
+ylabel('$\eta_a$ [m]','fontsize',20,'interpreter','latex')
+hold off
 
 %% NEES
 
 alpha = 0.05;
-r1 = chi2inv(alpha/2,NN*6)/(NN);
-r2 = chi2inv(1- alpha/2,NN*6)/(NN);
+r1 = chi2inv(alpha/2,NN*6)/NN;
+r2 = chi2inv(1- alpha/2,NN*6)/NN;
 
 figure; subplot(2,1,1)
 hold on
 plot(1:length(nees),nees,'.')
 plot(1:length(nees),r1*ones(1,length(nees)),'r--')
 plot(1:length(nees),r2*ones(1,length(nees)),'r--')
-title('NEES')
+xlabel('Time step, k','fontsize',16,'interpreter','latex')
+ylabel('$\bar{\epsilon}_x$ [m]','fontsize',20,'interpreter','latex')
+title('NEES Estimation Results','fontsize',20,'interpreter','latex')
 hold off
 
 %% NIS
@@ -474,5 +455,7 @@ hold on
 plot(1:length(nis),nis,'.')
 plot(1:length(nis),r1*ones(1,length(nis)),'r--')
 plot(1:length(nis),r2*ones(1,length(nis)),'r--')
-title('NIS')
+xlabel('Time step, k','fontsize',16,'interpreter','latex')
+ylabel('$\bar{\epsilon}_y$ [m]','fontsize',20,'interpreter','latex')
+title('NIS Estimation Results','fontsize',20,'interpreter','latex')
 hold off
