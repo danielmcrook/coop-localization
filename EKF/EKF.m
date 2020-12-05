@@ -1,5 +1,5 @@
 %% Globals/Givens
-clear all
+clear
 load('KFdata_MODIFIED.mat')
 p = 6; n = length(t); I = eye(p); rng('default')
 %% NL Matrices
@@ -82,7 +82,7 @@ Qkm1 = Q;
 Rk = R;
 
 P0 = diag([.01 .01 .001 .01 .01 .001]);
-Ppkm1 = P0;
+Ppkm1 = 100*P0;
 % xk = zeros(p,n);
 % pk = zeros(p,n);
 xtrue = zeros(p,n);
@@ -93,13 +93,16 @@ exk  = zeros(1,n-1);
 nis  = zeros(1,n-1);
 nees = zeros(1,n-1);
 NLdynrecord = zeros(p,n);
-NN = 25;
+NN = 50;
 xkrecord = zeros(p,n);
 nldyn = zeros(p,n);
 pk = zeros(p,n);
 pkrecord = zeros(p,n);
 EXKrec = zeros(p,n-1);
+exkrec = zeros(p,n-1);
 EYKrec = zeros(p-1,n-1);
+eykrec = zeros(p-1,n-1);
+sk = zeros(p-1,n-1);
 skrecord = zeros(p-1,n-1);
 for test=1:NN
     xk = zeros(p,n);
@@ -109,7 +112,7 @@ for test=1:NN
         % Lookup full state to linearize about
         xig = xk(1,k-1); etag = xk(2,k-1); thetag = xk(3,k-1);
         xia = xk(4,k-1); etaa = xk(5,k-1); thetaa = xk(6,k-1);
-
+        
         % Jacobian estimate
         Fkm1 = Fpred(vg,thetag,va,thetaa);
         
@@ -118,7 +121,7 @@ for test=1:NN
         
         % State Estimate
         W = sqrt(Q)*randn(6,1);
-        xmk = correct(NLdyn(xk(:,k-1),u,W)); % NL Dyn not re-ligning up with xpkm1
+        xmk = correct(NLdyn(xk(:,k-1),u,W));
         % record NL state estimate
         nldyn(:,k) = xmk;
         
@@ -130,6 +133,7 @@ for test=1:NN
         
         % Nonlinear Measurement Innovation
         pred = NLmeas(xmk);
+        pred(1) = wrapToPi(pred(1)); pred(3) = wrapToPi(pred(3));
         
         eykp1 = [-angdiff(ydata(1,k),pred(1)); ...
             ydata(2,k)-pred(2); ...
@@ -178,24 +182,24 @@ skrecord = skrecord/NN;
 NLdynrecord = NLdynrecord/NN;
 nis = nis/NN;
 nees = nees/NN;
-% xk = xkrecord;
+xk = xkrecord;
 % xtrue = NLdynrecord;
 % pk = pkrecord;
 
 
 
 
-% figure; hold on
-% xlim([min([xk(1,:),xk(4,:)],[],'all') max([xk(1,:),xk(4,:)],[],'all')])
-% ylim([min([xk(2,:),xk(5,:)],[],'all') max([xk(2,:),xk(5,:)],[],'all')])
-% for i=3:n
-%     plot(xk(1,i-1:i),xk(2,i-1:i),'k','Linewidth',0.5)
+figure; hold on
+xlim([min([xk(1,:),xk(4,:)],[],'all') max([xk(1,:),xk(4,:)],[],'all')])
+ylim([min([xk(2,:),xk(5,:)],[],'all') max([xk(2,:),xk(5,:)],[],'all')])
+for i=3:n
+    plot(xk(1,i-1:i),xk(2,i-1:i),'k','Linewidth',1)
 %     plot(NLdynrecord(1,i-1:i),NLdynrecord(2,i-1:i),'r','Linewidth',0.5)
-%     
-%     plot(xk(4,i-1:i),xk(5,i-1:i),'b','Linewidth',0.5)
+    
+    plot(xk(4,i-1:i),xk(5,i-1:i),'b','Linewidth',2)
 %     plot(NLdynrecord(4,i-1:i),NLdynrecord(5,i-1:i),'r','Linewidth',0.5)
-%     pause(.001)
-% end
+    pause(.001)
+end
 
 %% EXK Errors
 
@@ -206,7 +210,6 @@ subplot(6,1,1); hold on; grid on; grid minor
 plot(t(2:end),EXKrec(1,:),'Linewidth',2)
 plot(t(2:end),-pkrecord(1,2:end),'k--','Linewidth',2)
 plot(t(2:end),pkrecord(1,2:end),'k--','Linewidth',2)
-% legend('$e_{x,k}$','$2\sigma$','fontsize',12,'interpreter','latex')
 xlabel('Time [s]','fontsize',16,'interpreter','latex')
 ylabel('$\xi_g$ error [m]','fontsize',20,'interpreter','latex')
 hold off
@@ -215,7 +218,6 @@ subplot(6,1,2); hold on; grid on; grid minor
 plot(t(2:end),EXKrec(2,:),'Linewidth',2)
 plot(t(2:end),-pkrecord(2,2:end),'k--','Linewidth',2)
 plot(t(2:end),pkrecord(2,2:end),'k--','Linewidth',2)
-% legend('$e_{x,k}$','$2\sigma$','fontsize',12,'interpreter','latex')
 xlabel('Time [s]','fontsize',16,'interpreter','latex')
 ylabel('$\eta_g$ error [m]','fontsize',20,'interpreter','latex')
 hold off
@@ -224,7 +226,6 @@ subplot(6,1,3); hold on; grid on; grid minor
 plot(t(2:end),EXKrec(3,:),'Linewidth',2)
 plot(t(2:end),-pkrecord(3,2:end),'k--','Linewidth',2)
 plot(t(2:end),pkrecord(3,2:end),'k--','Linewidth',2)
-% legend('$e_{x,k}$','$2\sigma$','fontsize',12,'interpreter','latex')
 xlabel('Time [s]','fontsize',16,'interpreter','latex')
 ylabel('$\theta_g$ error [rad]','fontsize',20,'interpreter','latex')
 hold off
@@ -233,7 +234,6 @@ subplot(6,1,4); hold on; grid on; grid minor
 plot(t(2:end),EXKrec(4,:),'Linewidth',2)
 plot(t(2:end),-pkrecord(4,2:end),'k--','Linewidth',2)
 plot(t(2:end),pkrecord(4,2:end),'k--','Linewidth',2)
-% legend('$e_{x,k}$','$2\sigma$','fontsize',12,'interpreter','latex')
 xlabel('Time [s]','fontsize',16,'interpreter','latex')
 ylabel('$\xi_a$ error [m]','fontsize',20,'interpreter','latex')
 hold off
@@ -242,7 +242,6 @@ subplot(6,1,5); hold on; grid on; grid minor
 plot(t(2:end),EXKrec(5,:),'Linewidth',2)
 plot(t(2:end),-pkrecord(5,2:end),'k--','Linewidth',2)
 plot(t(2:end),pkrecord(5,2:end),'k--','Linewidth',2)
-% legend('$e_{x,k}$','$2\sigma$','fontsize',12,'interpreter','latex')
 xlabel('Time [s]','fontsize',16,'interpreter','latex')
 ylabel('$\eta_a$ error [m]','fontsize',20,'interpreter','latex')
 hold off
@@ -251,7 +250,6 @@ subplot(6,1,6); hold on; grid on; grid minor
 plot(t(2:end),EXKrec(6,:),'Linewidth',2)
 plot(t(2:end),-pkrecord(6,2:end),'k--','Linewidth',2)
 plot(t(2:end),pkrecord(6,2:end),'k--','Linewidth',2)
-% legend('$e_{x,k}$','$2\sigma$','fontsize',12,'interpreter','latex')
 xlabel('Time [s]','fontsize',16,'interpreter','latex')
 ylabel('$\theta_a$ error [rad]','fontsize',20,'interpreter','latex')
 hold off
@@ -389,7 +387,7 @@ figure
 sgtitle('Simulated Data','fontsize',24,'interpreter','latex')
 
 subplot(5,1,1); hold on; grid on; grid minor
-% plot(t,ydata(1,:),'b','Linewidth',1.5)
+plot(t,ydata(1,:),'b','Linewidth',1.5)
 plot(t,nlmeas(1,:),'Linewidth',2)
 % legend('ydata','computed')
 xlabel('Time [s]','fontsize',16,'interpreter','latex')
@@ -397,7 +395,7 @@ ylabel('$\gamma_{ag}$ [rads]','fontsize',20,'interpreter','latex')
 hold off
 
 subplot(5,1,2); hold on; grid on; grid minor
-% plot(t,ydata(2,:),'b','Linewidth',1.5)
+plot(t,ydata(2,:),'b','Linewidth',1.5)
 plot(t,nlmeas(2,:),'Linewidth',2)
 % legend('ydata','computed')
 xlabel('Time [s]','fontsize',16,'interpreter','latex')
@@ -405,7 +403,7 @@ ylabel('$\rho_{ga}$ [m]','fontsize',20,'interpreter','latex')
 hold off
 
 subplot(5,1,3); hold on; grid on; grid minor
-% plot(t,ydata(3,:),'b','Linewidth',1.5)
+plot(t,ydata(3,:),'b','Linewidth',1.5)
 plot(t,nlmeas(3,:),'Linewidth',2)
 % legend('ydata','computed')
 xlabel('Time [s]','fontsize',16,'interpreter','latex')
@@ -413,7 +411,7 @@ ylabel('$\gamma_{ga}$ [rads]','fontsize',20,'interpreter','latex')
 hold off
 
 subplot(5,1,4); hold on; grid on; grid minor
-% plot(t,ydata(4,:),'b','Linewidth',1.5)
+plot(t,ydata(4,:),'b','Linewidth',1.5)
 plot(t,nlmeas(4,:),'Linewidth',2)
 % legend('ydata','computed')
 xlabel('Time [s]','fontsize',16,'interpreter','latex')
@@ -421,7 +419,7 @@ ylabel('$\xi_a$ [m]','fontsize',20,'interpreter','latex')
 hold off
 
 subplot(5,1,5); hold on; grid on; grid minor
-% plot(t,ydata(5,:),'b','Linewidth',1.5)
+plot(t,ydata(5,:),'b','Linewidth',1.5)
 plot(t,nlmeas(5,:),'Linewidth',2)
 % legend('ydata','computed')
 xlabel('Time [s]','fontsize',16,'interpreter','latex')
