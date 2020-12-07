@@ -73,13 +73,17 @@ u = [vg phig va wa]';
 % Q(3) = 1.5*Q(3);
 % Q = 75*Q;
 % Qkm1 = Q;
-Q = Q*diag([0.0001 0.0001 0.75/2 0.00001 0.00001 0.75/2]);
-Q(1,3) = 0.0001;  Q(3,1) = 0.0001;
-Q(2,3) = 0.0001;  Q(3,2) = 0.0001;
-Q(4,6) = 0.0001;  Q(6,4) = 0.0001;
-Q(5,6) = 0.0001;  Q(6,5) = 0.0001;
+Qtrue=Q;
+Q = Q*diag([0.0001 0.0001 0.75/2 0.001 0.001 0.75/2]);
+% Q(1,3) = 0.05;  Q(3,1) = 0.05;
+% Q(2,3) = 0.05;  Q(3,2) = 0.05;
+% Q(4,6) = 0.05;  Q(6,4) = 0.05;
+% Q(5,6) = 0.05;  Q(6,5) = 0.05;
+% Q(
 Qkm1 = Q;
+% Qkm1 = [
 Rk = R;
+Q=Qtrue;
 
 P0 = diag([.01 .01 .001 .01 .01 .001]);
 Ppkm1 = 100*P0;
@@ -93,7 +97,7 @@ exk  = zeros(1,n-1);
 nis  = zeros(1,n-1);
 nees = zeros(1,n-1);
 NLdynrecord = zeros(p,n);
-NN = 50;
+NN = 20;
 xkrecord = zeros(p,n);
 nldyn = zeros(p,n);
 pk = zeros(p,n);
@@ -189,17 +193,17 @@ xk = xkrecord;
 
 
 
-figure; hold on
-xlim([min([xk(1,:),xk(4,:)],[],'all') max([xk(1,:),xk(4,:)],[],'all')])
-ylim([min([xk(2,:),xk(5,:)],[],'all') max([xk(2,:),xk(5,:)],[],'all')])
-for i=3:n
-    plot(xk(1,i-1:i),xk(2,i-1:i),'k','Linewidth',1)
-%     plot(NLdynrecord(1,i-1:i),NLdynrecord(2,i-1:i),'r','Linewidth',0.5)
-    
-    plot(xk(4,i-1:i),xk(5,i-1:i),'b','Linewidth',2)
-%     plot(NLdynrecord(4,i-1:i),NLdynrecord(5,i-1:i),'r','Linewidth',0.5)
-    pause(.001)
-end
+% figure; hold on
+% xlim([min([xk(1,:),xk(4,:)],[],'all') max([xk(1,:),xk(4,:)],[],'all')])
+% ylim([min([xk(2,:),xk(5,:)],[],'all') max([xk(2,:),xk(5,:)],[],'all')])
+% for i=3:n
+%     plot(xk(1,i-1:i),xk(2,i-1:i),'k','Linewidth',1)
+% %     plot(NLdynrecord(1,i-1:i),NLdynrecord(2,i-1:i),'r','Linewidth',0.5)
+%     
+%     plot(xk(4,i-1:i),xk(5,i-1:i),'b','Linewidth',2)
+% %     plot(NLdynrecord(4,i-1:i),NLdynrecord(5,i-1:i),'r','Linewidth',0.5)
+%     pause(.001)
+% end
 
 %% EXK Errors
 
