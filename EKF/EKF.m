@@ -73,17 +73,20 @@ u = [vg phig va wa]';
 % Q(3) = 1.5*Q(3);
 % Q = 75*Q;
 % Qkm1 = Q;
-Qtrue=Q;
-Q = Q*diag([0.0001 0.0001 0.75/2 0.001 0.001 0.75/2]);
-% Q(1,3) = 0.05;  Q(3,1) = 0.05;
-% Q(2,3) = 0.05;  Q(3,2) = 0.05;
-% Q(4,6) = 0.05;  Q(6,4) = 0.05;
-% Q(5,6) = 0.05;  Q(6,5) = 0.05;
+% Qtrue=Q;
+Q = diag([0.0001 0.0001 0.05 0.0001 0.0001 0.005]);
+% Q = Q*diag([0.0001 0.0001 0.75/2 0.001 0.001 0.75/2]);
+Q(1,3) = 0.008;  Q(3,1) = 0.008;
+Q(2,3) = 0.008;  Q(3,2) = 0.008;
+% Q(2,1) = 0.008;  Q(1,2) = 0.008;
+% Q(4,6) = 0.0001;  Q(6,4) = 0.0001;
+% Q(5,6) = 0.0001;  Q(6,5) = 0.0001;
+% Q(5,4) = 0.0001;  Q(4,5) = 0.0001;
 % Q(
 Qkm1 = Q;
 % Qkm1 = [
 Rk = R;
-Q=Qtrue;
+% Q=Qtrue;
 
 P0 = diag([.01 .01 .001 .01 .01 .001]);
 Ppkm1 = 100*P0;
@@ -124,6 +127,7 @@ for test=1:NN
         Pmk = Fkm1*Ppkm1*Fkm1' + Qkm1;
         
         % State Estimate
+%         W = chol(Q,'lower')*randn(6,1);
         W = sqrt(Q)*randn(6,1);
         xmk = correct(NLdyn(xk(:,k-1),u,W));
         % record NL state estimate
@@ -160,9 +164,10 @@ for test=1:NN
         xtrue(:,k) = correct(NLdyn(xk(:,k-1),u,W));
         
         % NEES
-        diff = [xtrue(1:2,k)-xk(1:2,k); -angdiff(xtrue(3,k),xk(3,k)); ...
-            xtrue(4:5,k)-xk(4:5,k); -angdiff(xtrue(6,k),xk(6,k))];
-        exk(k-1) = NEES(diff,Ppk);
+%         diff = [xtrue(1:2,k)-xk(1:2,k); -angdiff(xtrue(3,k),xk(3,k)); ...
+%             xtrue(4:5,k)-xk(4:5,k); -angdiff(xtrue(6,k),xk(6,k))];
+        diff = [-angdiff(xtrue(3,k),xk(3,k))];
+        exk(k-1) = NEES(diff,Ppk(3,3));
         exkrec(:,k-1) = diff;
         Ppkm1 = Ppk;
     end
@@ -436,28 +441,30 @@ alpha = 0.05;
 r1 = chi2inv(alpha/2,NN*6)/NN;
 r2 = chi2inv(1- alpha/2,NN*6)/NN;
 
-figure; subplot(2,1,1)
+figure;
+% subplot(2,1,1)
 hold on
 plot(1:length(nees),nees,'.')
 plot(1:length(nees),r1*ones(1,length(nees)),'r--')
 plot(1:length(nees),r2*ones(1,length(nees)),'r--')
 xlabel('Time step, k','fontsize',16,'interpreter','latex')
 ylabel('$\bar{\epsilon}_x$ [m]','fontsize',20,'interpreter','latex')
-title('NEES Estimation Results','fontsize',20,'interpreter','latex')
+% title('NEES Estimation Results','fontsize',20,'interpreter','latex')
+title(diag(Q)')
 hold off
 
 %% NIS
 
-alpha = 0.05;
-r1 = chi2inv(alpha/2,NN*5)/NN;
-r2 = chi2inv(1- alpha/2,NN*5)/NN;
-
-subplot(2,1,2)
-hold on
-plot(1:length(nis),nis,'.')
-plot(1:length(nis),r1*ones(1,length(nis)),'r--')
-plot(1:length(nis),r2*ones(1,length(nis)),'r--')
-xlabel('Time step, k','fontsize',16,'interpreter','latex')
-ylabel('$\bar{\epsilon}_y$ [m]','fontsize',20,'interpreter','latex')
-title('NIS Estimation Results','fontsize',20,'interpreter','latex')
-hold off
+% alpha = 0.05;
+% r1 = chi2inv(alpha/2,NN*5)/NN;
+% r2 = chi2inv(1- alpha/2,NN*5)/NN;
+% 
+% subplot(2,1,2)
+% hold on
+% plot(1:length(nis),nis,'.')
+% plot(1:length(nis),r1*ones(1,length(nis)),'r--')
+% plot(1:length(nis),r2*ones(1,length(nis)),'r--')
+% xlabel('Time step, k','fontsize',16,'interpreter','latex')
+% ylabel('$\bar{\epsilon}_y$ [m]','fontsize',20,'interpreter','latex')
+% title('NIS Estimation Results','fontsize',20,'interpreter','latex')
+% hold off
