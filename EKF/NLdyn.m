@@ -4,9 +4,9 @@ function out = NLdyn(x,u,W)
 
 tspan = [0,0.1];
 
-[~,y] = ode45(@(t,y) NLcoop(t,y,u,W),tspan,x);
+[~,y] = ode45(@(t,y) NLcoop(t,y,u),tspan,x);
 
-out = y(end,:)';
+out = y(end,:)' + W;
 
 end
 
