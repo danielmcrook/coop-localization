@@ -1,7 +1,7 @@
 %% Globals/Givens
 clear
 load('KFdata_MODIFIED.mat')
-p = 6; n = length(t); I = eye(p); rng('default')
+p = 6; n = length(t); I = eye(p); rng(100)
 %% NL Matrices
 A = @(vg,thetag,va,thetaa) [0 0 -vg*sin(thetag) 0 0 0;...
     0 0 vg*cos(thetag) 0 0 0;...
@@ -59,39 +59,22 @@ x0 = [xig etag thetag xia etaa thetaa]';
 u = [vg phig va wa]';
 %% Filter
 
-% Q(1,1) = Q(1,1)*5;
-% Q(2,2) = Q(2,2)*5;
-% Q(3,3) = Q(3,3)*100;
-% Q(4,4) = Q(4,4)*100;
-% Q(5,5) = Q(5,5)*100;
-% Q(6,6) = Q(6,6)*100;
-
-
-% Q(1:2) = 50*Q(1:2);
-% Q(3) = 1.5*Q(3);
-% Q(4:5) = 50*Q(4:5);
-% Q(3) = 1.5*Q(3);
-% Q = 75*Q;
-% Qkm1 = Q;
-% Qtrue=Q;
-% clear Q
-% load('test.mat')
-% Q
-Q = diag([0.01 0.01 0.005 0.0001 0.0001 0.005]);
+Q = diag([0.05 0.05 0.1 50 50 0.03]);
 % Q = diag([0.005 0.005 0.01 0.05 0.05 0.01]);
 % Q = Q*diag([0.0001 0.0001 0.75/2 0.001 0.001 0.75/2]);
-Q(1,3) = 0.0017;  Q(3,1) = Q(1,3);
-Q(2,3) = 0.001;  Q(3,2) = Q(2,3);
+% Q(1,3) = 0.0017;  Q(3,1) = Q(1,3);
+% Q(2,3) = 0.001;  Q(3,2) = Q(2,3);
 % Q(2,1) = -0.013;  Q(1,2) = Q(2,1);
-Q(4,6) = 0.0005;  Q(6,4) = Q(4,6);
-% Q(5,6) = -0.0005;  Q(6,5) = Q(5,6);
+% Q(4,6) = 0.0005;  Q(6,4) = Q(4,6);
+Q(5,6) = -0.0005;  Q(6,5) = Q(5,6);
 % Q(5,4) = -0.00005;  Q(4,5) = Q(5,4);
-% Q(3,6) = -0.03;  Q(6,3) = Q(3,6);
+Q(3,6) = -0.03;  Q(6,3) = Q(3,6);
+% Q(2,5) = 0.000021;  Q(5,2) = Q(3,6);
 % Q = zeros(6);
 Qkm1 = Q;
 
-P0 = diag([.01 .01 .02 .01 .01 .02]);
-% P0 = diag([0 0 0 0 0 0]);
+% P0 = diag([2.5 2.5 .2 10 10 .1]);
+P0 = diag([0.001 0.001 0.01 0.001 0.001 0.01]);
 
 
 epyk = zeros(1,n-1);
@@ -100,8 +83,13 @@ exk  = zeros(1,n-1);
 nis  = zeros(1,n-1);
 % nees = zeros(7,n-1);
 nees = zeros(1,n-1);
+
 NLdynrecord = zeros(p,n);
 NN = 1;
+
+NEESsamps = zeros(NN,n-1);
+NISsamps = zeros(NN,n-1);
+
 xkrecord = zeros(p,n);
 nldyn = zeros(p,n);
 pk = zeros(p,n);
@@ -115,21 +103,21 @@ skrecord = zeros(p-1,n-1);
 for test=1:NN
     
     xtrue = zeros(p,n);
-    xtrue(:,1) = x0;
-%     xtrue(:,1) = mvnrnd(x0,P0);
+%     xtrue(:,1) = x0;
+    xtrue(:,1) = mvnrnd(x0,P0);
     
     for k=2:n
         
         W = mvnrnd(zeros(6,1),Q)';
 %         W = zeros(6,1);
         xtrue(:,k) = correct(NLdyn(xtrue(:,k-1),u,W));
-        
+%         wrec(:,k) = W;
     end
     
     xk = zeros(p,n);
 %     xk(:,1) = mvnrnd(x0,P0);
     xk(:,1) = x0;
-    Ppkm1 = 10000*diag([.01 .01 .001 .01 .01 .001]);
+    Ppkm1 = diag([100 100 2 1000 1000 2]);
     
     for k=2:n
         % Lookup full state to linearize about
@@ -160,14 +148,14 @@ for test=1:NN
         ymkp1 = NLmeas(xmk);
         ymkp1(1) = wrapToPi(ymkp1(1)); ymkp1(3) = wrapToPi(ymkp1(3));
 %         PRED(:,k) = ymkp1;
-        eyk = [wrapToPi(ydata(1,k)-ymkp1(1)); ...
-            ydata(2,k)-ymkp1(2); ...
-            wrapToPi(ydata(3,k)-ymkp1(3)); ...
-            ydata(4:5,k)-ymkp1(4:5)];
-%         eyk = [-angdiff(ydata(1,k),ymkp1(1)); ...
+%         eyk = [wrapToPi(ydata(1,k)-ymkp1(1)); ...
 %             ydata(2,k)-ymkp1(2); ...
-%             -angdiff(ydata(3,k),ymkp1(3)); ...
+%             wrapToPi(ydata(3,k)-ymkp1(3)); ...
 %             ydata(4:5,k)-ymkp1(4:5)];
+        eyk = [-angdiff(ydata(1,k),ymkp1(1)); ...
+            ydata(2,k)-ymkp1(2); ...
+            -angdiff(ydata(3,k),ymkp1(3)); ...
+            ydata(4:5,k)-ymkp1(4:5)];
         eykrec(:,k-1) = eyk;
         
         % NIS
@@ -186,8 +174,8 @@ for test=1:NN
         
         
         % NEES
-        diff = [xtrue(1:2,k)-xk(1:2,k); wrapToPi(xtrue(3,k)-xk(3,k)); ...
-            xtrue(4:5,k)-xk(4:5,k); wrapToPi(xtrue(6,k)-xk(6,k))];
+        diff = [xtrue(1:2,k)-xk(1:2,k); -angdiff(xtrue(3,k),xk(3,k)); ...
+            xtrue(4:5,k)-xk(4:5,k); -angdiff(xtrue(6,k),xk(6,k))];
         exk(k-1) = NEES(diff,Ppk);
         exkrec(:,k-1) = diff;
 %         exk(:,k-1) = [NEES(diff(1),Ppk(1,1));...
@@ -205,6 +193,10 @@ for test=1:NN
     pkrecord = pkrecord + pk;
     skrecord = skrecord + sk;
     NLdynrecord = NLdynrecord + nldyn;
+    
+    NEESsamps(test,:) = exk;
+    NISsamps(test,:) = epyk;
+    
     nis = nis+epyk;
     nees = nees+exk;
     if test<NN
@@ -219,6 +211,8 @@ skrecord = skrecord/NN;
 NLdynrecord = NLdynrecord/NN;
 nis = nis/NN;
 nees = nees/NN;
+NEESS = mean(NEESsamps,1);
+NISS = mean(NISsamps,1);
 % xk = xkrecord;
 % xtrue = NLdynrecord;
 % pk = pkrecord;
