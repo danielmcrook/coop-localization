@@ -38,7 +38,7 @@ if vg > 3
 end
 
 % NL EOM
-dx = [vg*cos(thetag); vg*sin(thetag); vg*tan(phig)/L;...
-    va*cos(thetaa); va*sin(thetaa); wa] + W;
+dx = cast([vg*cos(thetag); vg*sin(thetag); vg*tan(phig)/L;...
+    va*cos(thetaa); va*sin(thetaa); wa] + W,'double');
 
 end
